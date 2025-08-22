@@ -9,9 +9,10 @@ def get_window_size():
   cr = struct.unpack("hh", fcntl.ioctl(1, termios.TIOCGWINSZ, "1234"))
   return int(cr[1])
 
-def progress_bar(current, total, pipe_char="#", empty_char="."):
+def progress_bar(current, total, pipe_char="#", empty_char=".", bar_total=None):
   s = "["
-  bar_total = get_window_size() - 6 
+  if not bar_total:
+    bar_total = get_window_size() - 6 
   perc_done = int(current * 100 / total)
   num_bars = int(perc_done * bar_total / 100)
   for i in range(0, num_bars):
