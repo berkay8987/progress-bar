@@ -41,7 +41,8 @@ def progress_bar(current, total, pipe_char="#", empty_char=".", bar_total=None):
   if not bar_total:
     bar_total = get_window_size()[1] - 7
 
-  sys.stdout.write(f"Processing step {current}\n")
+  sys.stdout.write("\x1b[0K")
+  sys.stdout.write(f"\x1b[38;5;226mINFO\x1b[0m: Processing step {current}\n")
   sys.stdout.flush()
 
   # save current cursor pos, then put cursor at bottom line
@@ -80,9 +81,6 @@ if __name__ == "__main__":
   for i in range(current, total + 1):
     progress_bar(i, total)
     time.sleep(0.05)
-    # Since we're setting the cursor at the beginning of the line with '\r'
-    # below line becomes unnecessary as it overrides the same line.
-    # sys.stdout.write("\x1b[K")
   sys.stdout.write("\x1b[?1049l")
   tend = timeit.default_timer()
   t = tend - tstart
