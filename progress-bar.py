@@ -6,6 +6,8 @@ import fcntl
 import struct
 import os
 
+log_lines = []
+
 def get_window_size():
   """
   Returns the window size
@@ -19,6 +21,8 @@ def get_window_size():
   """
   cr = struct.unpack("hh", fcntl.ioctl(1, termios.TIOCGWINSZ, "1234"))
   return int(cr[0]), int(cr[1])
+
+LOG_CAP = get_window_size()[0] - 1
 
 def progress_bar(current, total, pipe_char="#", empty_char=".", bar_total=None):
   """
@@ -38,12 +42,21 @@ def progress_bar(current, total, pipe_char="#", empty_char=".", bar_total=None):
     Total length of the progress bar. If None, adapts to terminal width.
   """
 
+  global log_lines
+
   if not bar_total:
     bar_total = get_window_size()[1] - 7
 
-  sys.stdout.write("\x1b[0K")
-  sys.stdout.write(f"\x1b[38;5;226mINFO\x1b[0m: Processing step {current}\n")
-  sys.stdout.flush()
+  infotext = f"\x1b[38;5;226mINFO\x1b[0m: Processing step {current}\n"
+  if len(log_lines) < LOG_CAP:
+    log_lines.append(infotext)
+    sys.stdout.write("\x1b[0K")
+    sys.stdout.write(infotext)
+  else:
+    log_lines = log_lines[1:] + [infotext]
+    sys.stdout.write("\x1b[H")
+    for line in log_lines:
+      sys.stdout.write(line)
 
   # save current cursor pos, then put cursor at bottom line
   # print progress-bar, then put cursor back to saved pos
